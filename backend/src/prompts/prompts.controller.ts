@@ -1,0 +1,52 @@
+import { Controller, Get, Post, Body, Patch, Param, UseGuards, Request, Query } from '@nestjs/common';
+import { PromptsService } from './prompts.service';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+
+@ApiTags('Prompts')
+@Controller('prompts')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+export class PromptsController {
+    constructor(private readonly promptsService: PromptsService) { }
+
+    @Post()
+    @ApiOperation({ summary: 'Create a new prompt' })
+    create(@Request() req, @Body() body: { workspaceId: string; collectionId?: string; title: string; description?: string; content: string; tags?: string[] }) {
+        return this.promptsService.create(req.user.userId, body);
+    }
+
+    @Get()
+    @ApiOperation({ summary: 'List prompts with filters' })
+    @ApiQuery({ name: 'workspaceId', required: true })
+    @ApiQuery({ name: 'collectionId', required: false })
+    @ApiQuery({ name: 'search', required: false })
+    @ApiQuery({ name: 'tags', required: false, isArray: true })
+    findAll(
+        @Request() req,
+        @Query('workspaceId') workspaceId: string,
+        @Query('collectionId') collectionId?: string,
+        @Query('search') search?: string,
+        @Query('tags') tags?: string[],
+    ) {
+        return this.promptsService.findAll(req.user.userId, workspaceId, { collectionId, search, tags });
+    }
+
+    @Get(':id')
+    @ApiOperation({ summary: 'Get prompt details' })
+    findOne(@Request() req, @Param('id') id: string) {
+        return this.promptsService.findOne(req.user.userId, id);
+    }
+
+    @Post(':id/versions')
+    @ApiOperation({ summary: 'Create a new version' })
+    createVersion(@Request() req, @Param('id') id: string, @Body() body: { content: string; model?: string }) {
+        return this.promptsService.createVersion(req.user.userId, id, body);
+    }
+
+    @Post('versions/:id/run')
+    @ApiOperation({ summary: 'Log a run for a version' })
+    logRun(@Request() req, @Param('id') id: string, @Body() body: { rating?: number; notes?: string; usedModel?: string; responseLength?: number }) {
+        return this.promptsService.logRun(req.user.userId, id, body);
+    }
+}
