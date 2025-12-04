@@ -1,5 +1,6 @@
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function Header() {
     return (
@@ -36,6 +37,7 @@ export function Header() {
                     <div className="w-full flex-1 md:w-auto md:flex-none">
                         {/* Search bar could go here */}
                     </div>
+                    <ThemeToggle />
                     <UserButton afterSignOutUrl="/" />
                 </div>
             </div>
