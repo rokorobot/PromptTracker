@@ -1,12 +1,13 @@
 "use client";
 
+import React from "react";
 import { usePrompt, useDeletePrompt } from "@/lib/hooks";
 import { useParams, useRouter } from "next/navigation";
 import { Loader2, Copy, Pencil, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -155,6 +156,98 @@ export default function PromptDetailPage() {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Version History */}
+            {sortedVersions.length > 1 && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Version History</CardTitle>
+                        <CardDescription>
+                            {sortedVersions.length} versions • Click to expand and view content
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {sortedVersions.map((version, index) => (
+                            <VersionItem
+                                key={version.id}
+                                version={version}
+                                isLatest={index === 0}
+                                onCopy={(content) => {
+                                    navigator.clipboard.writeText(content);
+                                    toast({
+                                        title: "Copied!",
+                                        description: `Version ${version.versionNumber} content copied to clipboard.`,
+                                    });
+                                }}
+                            />
+                        ))}
+                    </CardContent>
+                </Card>
+            )}
+        </div>
+    );
+}
+
+// Version Item Component with expand/collapse
+function VersionItem({ version, isLatest, onCopy }: {
+    version: any;
+    isLatest: boolean;
+    onCopy: (content: string) => void;
+}) {
+    const [isExpanded, setIsExpanded] = React.useState(false);
+
+    return (
+        <div className="border rounded-lg p-4 space-y-3">
+            <div className="flex items-start justify-between">
+                <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                        <Badge variant={isLatest ? "default" : "secondary"}>
+                            v{version.versionNumber}
+                        </Badge>
+                        {isLatest && (
+                            <Badge variant="outline">Latest</Badge>
+                        )}
+                    </div>
+                    <div className="mt-2 text-sm text-muted-foreground">
+                        Created {formatDistanceToNow(new Date(version.createdAt), { addSuffix: true })}
+                        {version.createdBy && ` by ${version.createdBy.name}`}
+                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onCopy(version.content)}
+                    >
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copy
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsExpanded(!isExpanded)}
+                    >
+                        {isExpanded ? "Collapse" : "Expand"}
+                    </Button>
+                </div>
+            </div>
+
+            {/* Content Preview (first 100 chars) */}
+            {!isExpanded && (
+                <div className="text-sm text-muted-foreground">
+                    {version.content.substring(0, 100)}
+                    {version.content.length > 100 && "..."}
+                </div>
+            )}
+
+            {/* Full Content (when expanded) */}
+            {isExpanded && (
+                <div className="bg-muted p-4 rounded-lg overflow-x-auto">
+                    <pre className="whitespace-pre-wrap font-mono text-sm">
+                        {version.content}
+                    </pre>
+                </div>
+            )}
         </div>
     );
 }
