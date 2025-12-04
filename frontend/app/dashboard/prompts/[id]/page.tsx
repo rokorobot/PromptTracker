@@ -1,13 +1,15 @@
 "use client";
 
 import React from "react";
-import { usePrompt, useDeletePrompt } from "@/lib/hooks";
+import { usePrompt, useDeletePrompt, useCreateVersion } from "@/lib/hooks";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, Copy, Pencil, Trash2, ArrowLeft } from "lucide-react";
+import { Loader2, Copy, Pencil, Trash2, ArrowLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -29,6 +31,9 @@ export default function PromptDetailPage() {
     const id = params.id as string;
     const { data: prompt, isLoading, error } = usePrompt(id);
     const deletePrompt = useDeletePrompt();
+    const createVersion = useCreateVersion();
+    const [isNewVersionOpen, setIsNewVersionOpen] = React.useState(false);
+    const [newVersionContent, setNewVersionContent] = React.useState("");
 
     if (isLoading) {
         return (
@@ -80,8 +85,76 @@ export default function PromptDetailPage() {
         }
     };
 
+    const handleCreateVersion = async () => {
+        if (!newVersionContent.trim()) {
+            toast({
+                title: "Error",
+                description: "Version content cannot be empty",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        try {
+            await createVersion.mutateAsync({ promptId: id, content: newVersionContent });
+            toast({
+                title: "Success",
+                description: "New version created successfully!",
+            });
+            setIsNewVersionOpen(false);
+            setNewVersionContent("");
+        } catch (error: any) {
+            toast({
+                title: "Error",
+                description: error.message || "Failed to create version",
+                variant: "destructive",
+            });
+        }
+    };
+
     return (
         <div className="space-y-6 max-w-5xl mx-auto">
+            {/* New Version Dialog */}
+            <Dialog open={isNewVersionOpen} onOpenChange={setIsNewVersionOpen}>
+                <DialogContent className="max-w-3xl">
+                    <DialogHeader>
+                        <DialogTitle>Create New Version</DialogTitle>
+                        <DialogDescription>
+                            Create a new version of this prompt. The version number will be automatically incremented.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-sm font-medium mb-2 block">
+                                Prompt Content *
+                            </label>
+                            <Textarea
+                                placeholder="Enter your prompt content..."
+                                value={newVersionContent}
+                                onChange={(e) => setNewVersionContent(e.target.value)}
+                                rows={15}
+                                className="font-mono"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsNewVersionOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleCreateVersion} disabled={createVersion.isPending}>
+                            {createVersion.isPending ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Creating...
+                                </>
+                            ) : (
+                                "Create Version"
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon" asChild>
                     <Link href="/dashboard/prompts">
@@ -143,10 +216,16 @@ export default function PromptDetailPage() {
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-base font-medium">Latest Version (v{latestVersion?.versionNumber})</CardTitle>
-                    <Button variant="ghost" size="sm" onClick={copyToClipboard}>
-                        <Copy className="h-4 w-4 mr-2" />
-                        Copy
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="sm" onClick={copyToClipboard}>
+                            <Copy className="h-4 w-4 mr-2" />
+                            Copy
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => setIsNewVersionOpen(true)}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            New Version
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <div className="bg-muted p-4 rounded-lg overflow-x-auto">
