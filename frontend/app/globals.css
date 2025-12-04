@@ -32,25 +32,35 @@
   }
 
   .dark {
-    --background: 0 0% 9%;
+    /* Background: Dark Blue/Grey Tint */
+    --background: 224 20% 10%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 12%;
+
+    /* Cards/Bubbles: Neutral Dark Grey */
+    --card: 0 0% 13%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 9%;
+    --popover: 0 0% 13%;
     --popover-foreground: 0 0% 98%;
+
     --primary: 263.4 70% 50.4%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 0 0% 15%;
+
+    /* Secondary/Muted/Accent: Slightly lighter neutral grey */
+    --secondary: 0 0% 16%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 15%;
+    --muted: 0 0% 16%;
     --muted-foreground: 0 0% 65%;
-    --accent: 0 0% 15%;
+    --accent: 0 0% 16%;
     --accent-foreground: 0 0% 98%;
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
+
+    /* Borders: Neutral grey */
     --border: 0 0% 20%;
     --input: 0 0% 20%;
     --ring: 263.4 70% 50.4%;
+
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
