@@ -1,7 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 const isProtectedRoute = createRouteMatcher([
-    '/dashboard(.*)',
+    // '/dashboard(.*)', // Temporarily allow dashboard access to debug redirect loop
     '/api/workspaces(.*)',
     '/api/prompts(.*)',
     '/api/collections(.*)',

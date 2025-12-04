@@ -138,6 +138,68 @@ export class PromptsService {
         return prompt;
     }
 
+    async update(userId: string, id: string, data: { title?: string; description?: string; tags?: string[] }) {
+        const user = await this.prisma.user.findUnique({ where: { clerkId: userId } });
+        if (!user) throw new NotFoundException('User not found');
+
+        const prompt = await this.prisma.prompt.findUnique({ where: { id } });
+        if (!prompt) throw new NotFoundException('Prompt not found');
+
+        await this.verifyWorkspaceAccess(user.id, prompt.workspaceId, [MemberRole.OWNER, MemberRole.EDITOR]);
+
+        return this.prisma.$transaction(async (tx) => {
+            // Update basic fields
+            const updated = await tx.prompt.update({
+                where: { id },
+                data: {
+                    title: data.title,
+                    description: data.description,
+                },
+            });
+
+            // Handle tags if provided
+            if (data.tags !== undefined) {
+                // Remove existing tags
+                await tx.promptTag.deleteMany({
+                    where: { promptId: id },
+                });
+
+                // Add new tags
+                if (data.tags.length > 0) {
+                    for (const tagName of data.tags) {
+                        // Find or create tag
+                        const tag = await tx.tag.upsert({
+                            where: { name: tagName },
+                            update: {},
+                            create: { name: tagName },
+                        });
+
+                        // Link tag to prompt
+                        await tx.promptTag.create({
+                            data: {
+                                promptId: id,
+                                tagId: tag.id,
+                            },
+                        });
+                    }
+                }
+            }
+
+            // Return updated prompt with relations
+            return tx.prompt.findUnique({
+                where: { id },
+                include: {
+                    versions: {
+                        orderBy: { versionNumber: 'desc' },
+                    },
+                    tags: {
+                        include: { tag: true },
+                    },
+                },
+            });
+        });
+    }
+
     async createVersion(userId: string, promptId: string, data: { content: string; model?: string }) {
         const user = await this.prisma.user.findUnique({ where: { clerkId: userId } });
         if (!user) throw new NotFoundException('User not found');

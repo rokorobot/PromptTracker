@@ -9,10 +9,15 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useCreatePrompt, useWorkspaces } from "@/lib/hooks";
+import { useToast } from "@/hooks/use-toast";
 
 export default function NewPromptPage() {
     const router = useRouter();
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { toast } = useToast();
+    const createPrompt = useCreatePrompt();
+    const { data: workspaces } = useWorkspaces();
+
     const [formData, setFormData] = useState({
         title: "",
         description: "",
@@ -20,22 +25,41 @@ export default function NewPromptPage() {
         tags: "",
     });
 
+    const workspaceId = workspaces?.[0]?.id;
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
+
+        if (!workspaceId) {
+            toast({
+                title: "Error",
+                description: "No workspace found. Please create a workspace first.",
+                variant: "destructive",
+            });
+            return;
+        }
 
         try {
-            // TODO: Call API to create prompt
-            console.log("Creating prompt:", formData);
+            await createPrompt.mutateAsync({
+                workspaceId,
+                title: formData.title,
+                description: formData.description || undefined,
+                content: formData.content,
+                tags: formData.tags ? formData.tags.split(",").map(t => t.trim()).filter(Boolean) : undefined,
+            });
 
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            toast({
+                title: "Success",
+                description: "Prompt created successfully!",
+            });
 
             router.push("/dashboard/prompts");
-        } catch (error) {
-            console.error("Failed to create prompt:", error);
-        } finally {
-            setIsSubmitting(false);
+        } catch (error: any) {
+            toast({
+                title: "Error",
+                description: error.message || "Failed to create prompt",
+                variant: "destructive",
+            });
         }
     };
 
@@ -108,8 +132,8 @@ export default function NewPromptPage() {
                         </div>
 
                         <div className="flex gap-4">
-                            <Button type="submit" disabled={isSubmitting}>
-                                {isSubmitting ? "Creating..." : "Create Prompt"}
+                            <Button type="submit" disabled={createPrompt.isPending || !workspaceId}>
+                                {createPrompt.isPending ? "Creating..." : "Create Prompt"}
                             </Button>
                             <Button type="button" variant="outline" asChild>
                                 <Link href="/dashboard/prompts">Cancel</Link>
