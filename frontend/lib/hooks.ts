@@ -98,3 +98,15 @@ export function useCurrentUser() {
         queryFn: () => usersApi.me(fetchApi),
     });
 }
+
+export function useDeletePrompt() {
+    const { fetchApi } = useApiClient();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: string) => fetchApi(`/prompts/${id}`, { method: "DELETE" }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["prompts"] });
+        },
+    });
+}

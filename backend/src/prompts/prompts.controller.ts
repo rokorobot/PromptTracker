@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards, Request, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
 import { PromptsService } from './prompts.service';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -47,6 +47,12 @@ export class PromptsController {
     @ApiOperation({ summary: 'Update prompt' })
     update(@Request() req, @Param('id') id: string, @Body() body: { title?: string; description?: string; tags?: string[] }) {
         return this.promptsService.update(this.getMockUserId(), id, body);
+    }
+
+    @Delete(':id')
+    @ApiOperation({ summary: 'Delete prompt' })
+    delete(@Request() req, @Param('id') id: string) {
+        return this.promptsService.delete(this.getMockUserId(), id);
     }
 
     @Post(':id/versions')

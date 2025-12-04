@@ -1,7 +1,7 @@
 "use client";
 
-import { usePrompt } from "@/lib/hooks";
-import { useParams } from "next/navigation";
+import { usePrompt, useDeletePrompt } from "@/lib/hooks";
+import { useParams, useRouter } from "next/navigation";
 import { Loader2, Copy, Pencil, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -9,12 +9,25 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function PromptDetailPage() {
     const params = useParams();
+    const router = useRouter();
     const { toast } = useToast();
     const id = params.id as string;
     const { data: prompt, isLoading, error } = usePrompt(id);
+    const deletePrompt = useDeletePrompt();
 
     if (isLoading) {
         return (
@@ -49,6 +62,23 @@ export default function PromptDetailPage() {
         }
     };
 
+    const handleDelete = async () => {
+        try {
+            await deletePrompt.mutateAsync(id);
+            toast({
+                title: "Deleted",
+                description: "Prompt deleted successfully.",
+            });
+            router.push("/dashboard/prompts");
+        } catch (error: any) {
+            toast({
+                title: "Error",
+                description: error.message || "Failed to delete prompt",
+                variant: "destructive",
+            });
+        }
+    };
+
     return (
         <div className="space-y-6 max-w-5xl mx-auto">
             <div className="flex items-center gap-4">
@@ -72,10 +102,28 @@ export default function PromptDetailPage() {
                             Edit
                         </Link>
                     </Button>
-                    <Button variant="destructive" size="sm">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm">
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will permanently delete this prompt and all its versions. This action cannot be undone.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                    Delete
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </div>
             </div>
 

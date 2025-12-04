@@ -200,6 +200,46 @@ export class PromptsService {
         });
     }
 
+    async delete(userId: string, id: string) {
+        const user = await this.prisma.user.findUnique({ where: { clerkId: userId } });
+        if (!user) throw new NotFoundException('User not found');
+
+        const prompt = await this.prisma.prompt.findUnique({ where: { id } });
+        if (!prompt) throw new NotFoundException('Prompt not found');
+
+        await this.verifyWorkspaceAccess(user.id, prompt.workspaceId, [MemberRole.OWNER, MemberRole.EDITOR]);
+
+        // Delete in transaction to ensure all related data is removed
+        return this.prisma.$transaction(async (tx) => {
+            // Delete prompt runs (via versions)
+            const versions = await tx.promptVersion.findMany({
+                where: { promptId: id },
+                select: { id: true },
+            });
+
+            for (const version of versions) {
+                await tx.promptRun.deleteMany({
+                    where: { promptVersionId: version.id },
+                });
+            }
+
+            // Delete versions
+            await tx.promptVersion.deleteMany({
+                where: { promptId: id },
+            });
+
+            // Delete tags
+            await tx.promptTag.deleteMany({
+                where: { promptId: id },
+            });
+
+            // Delete prompt
+            return tx.prompt.delete({
+                where: { id },
+            });
+        });
+    }
+
     async createVersion(userId: string, promptId: string, data: { content: string; model?: string }) {
         const user = await this.prisma.user.findUnique({ where: { clerkId: userId } });
         if (!user) throw new NotFoundException('User not found');
