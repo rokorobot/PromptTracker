@@ -2,23 +2,32 @@
 
 A comprehensive web application for saving, organizing, versioning, and analyzing LLM prompts with team collaboration features.
 
-## 🎯 Features
+## 🎯 Current Status
 
-### MVP Features (v1)
-- **Prompt Library**: Create, edit, delete, and organize prompts with rich metadata
-- **Versioning**: Track multiple versions of prompts with performance comparison
-- **Usage Logging**: Manually log prompt runs with ratings and notes
-- **Search & Filters**: Full-text search with filtering by tags, categories, and models
-- **Collections**: Organize prompts into projects, clients, or workflows
-- **Analytics**: Track prompt performance, usage statistics, and trends
-- **Team Collaboration**: Share prompts with team members with role-based access
+**MVP Core Features - Working!** ✅
 
-### Future Enhancements
-- Browser extension for quick-save from ChatGPT/Claude
-- Direct LLM API integration with auto-logging
-- A/B testing for prompt variants
-- Public templates marketplace
-- AI-assisted prompt improvement
+The application is functional with core prompt management features. Authentication is temporarily disabled to allow testing of the main functionality.
+
+### ✅ Implemented Features
+- **Create Prompts**: Full form with title, description, content, and tags
+- **View Prompts**: Detail page with version history and copy-to-clipboard functionality
+- **Edit Prompts**: Update title, description, and tags
+- **List Prompts**: Dashboard view showing all prompts in workspace
+- **User/Workspace Sync**: Automatic workspace creation on first login
+- **Tagging System**: Add and manage tags for prompt organization
+
+### 🚧 In Progress
+- **Authentication**: Clerk integration (JWT validation needs debugging)
+- **Delete Prompts**: Backend endpoint ready, UI pending
+- **Version History**: View and compare prompt versions
+- **Collections**: Organize prompts into folders/projects
+
+### 📋 Planned Features
+- **Analytics Dashboard**: Track prompt performance and usage
+- **Team Collaboration**: Share prompts with role-based access
+- **Search & Filters**: Full-text search with advanced filtering
+- **Browser Extension**: Quick-save from ChatGPT/Claude
+- **API Integration**: Direct LLM API calls with auto-logging
 
 ## 🏗️ Tech Stack
 
@@ -27,10 +36,8 @@ A comprehensive web application for saving, organizing, versioning, and analyzin
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS + shadcn/ui components
 - **State Management**: TanStack Query (React Query)
-- **Authentication**: Clerk
+- **Authentication**: Clerk (temporarily disabled)
 - **Forms**: React Hook Form + Zod validation
-- **Markdown**: react-markdown
-- **Charts**: Recharts
 
 ### Backend
 - **Framework**: NestJS
@@ -38,35 +45,46 @@ A comprehensive web application for saving, organizing, versioning, and analyzin
 - **Database**: PostgreSQL
 - **ORM**: Prisma
 - **API Documentation**: Swagger/OpenAPI
-- **Authentication**: Clerk + JWT
+- **Authentication**: Clerk + JWT (temporarily disabled)
 
 ## 📁 Project Structure
 
 ```
 prompt-tracker/
 ├── frontend/                 # Next.js frontend application
-│   ├── app/                 # App router pages
-│   │   ├── (auth)/         # Authentication pages
-│   │   ├── (dashboard)/    # Main application pages
-│   │   └── layout.tsx      # Root layout
-│   ├── components/         # React components
-│   │   ├── ui/            # shadcn/ui components
-│   │   ├── prompts/       # Prompt-related components
-│   │   ├── collections/   # Collection components
-│   │   └── analytics/     # Analytics components
-│   ├── lib/               # Utilities and API client
-│   └── types/             # TypeScript types
+│   ├── app/
+│   │   ├── (auth)/          # Authentication pages
+│   │   ├── dashboard/       # Main application pages
+│   │   │   ├── page.tsx     # Dashboard home
+│   │   │   └── prompts/     # Prompt management
+│   │   │       ├── page.tsx           # Prompts list
+│   │   │       ├── new/page.tsx       # Create prompt
+│   │   │       └── [id]/              # Prompt detail & edit
+│   │   └── layout.tsx       # Root layout with Clerk
+│   ├── components/
+│   │   ├── ui/             # shadcn/ui components
+│   │   ├── auth/           # Auth components (UserSync)
+│   │   ├── layout/         # Header, Sidebar
+│   │   └── prompts/        # PromptCard, PromptList
+│   ├── lib/
+│   │   ├── services/       # API client
+│   │   ├── hooks.ts        # React Query hooks
+│   │   └── query-provider.tsx
+│   └── middleware.ts       # Clerk middleware
 │
-├── backend/                # NestJS backend application
+├── backend/                 # NestJS backend application
 │   ├── src/
-│   │   ├── prisma/        # Prisma service
-│   │   ├── modules/       # Feature modules (to be added)
-│   │   ├── app.module.ts  # Root module
-│   │   └── main.ts        # Entry point
+│   │   ├── auth/           # JWT strategy (JWKS integration)
+│   │   ├── users/          # User management
+│   │   ├── workspaces/     # Workspace management
+│   │   ├── prompts/        # Prompt CRUD operations
+│   │   ├── collections/    # Collections (planned)
+│   │   ├── prisma/         # Prisma service
+│   │   └── main.ts         # Entry point with CORS
 │   └── prisma/
-│       └── schema.prisma  # Database schema
+│       └── schema.prisma   # Database schema
 │
-└── README.md              # This file
+└── README.md               # This file
 ```
 
 ## 🚀 Getting Started
@@ -75,94 +93,89 @@ prompt-tracker/
 
 - Node.js 18+ and npm
 - PostgreSQL 14+
-- Clerk account (for authentication)
+- Clerk account (for authentication - optional for testing)
 
-### Installation
+### Quick Start
 
 1. **Clone the repository**
    ```bash
-   cd c:\Users\Robert Konecny\.gemini\antigravity\playground\prompt-tracker
+   git clone https://github.com/rokorobot/PromptTracker.git
+   cd PromptTracker
    ```
 
 2. **Set up the backend**
    ```bash
    cd backend
-   cmd /c "npm install"
+   npm install
    
    # Copy environment file and configure
-   copy .env.example .env
-   # Edit .env with your database credentials and Clerk keys
+   cp .env.example .env
+   # Edit .env with your database credentials
    
-   # Generate Prisma client
-   cmd /c "npx prisma generate"
-   
-   # Run database migrations
-   cmd /c "npx prisma migrate dev --name init"
+   # Generate Prisma client and run migrations
+   npx prisma generate
+   npx prisma migrate dev --name init
    ```
 
 3. **Set up the frontend**
    ```bash
    cd ../frontend
-   cmd /c "npm install"
+   npm install
    
-   # Copy environment file and configure
-   copy .env.local.example .env.local
-   # Edit .env.local with your Clerk keys
+   # Copy environment file
+   cp .env.local.example .env.local
+   # Edit .env.local with your Clerk keys (optional for testing)
    ```
 
 ### Running the Application
 
 1. **Start the backend** (in `backend/` directory):
    ```bash
-   cmd /c "npm run start:dev"
+   npm run start:dev
    ```
-   Backend will run on http://localhost:3001
-   API docs available at http://localhost:3001/api/docs
+   - Backend runs on http://localhost:3001
+   - API docs at http://localhost:3001/api/docs
 
 2. **Start the frontend** (in `frontend/` directory):
    ```bash
-   cmd /c "npm run dev"
+   npm run dev
    ```
-   Frontend will run on http://localhost:3000
+   - Frontend runs on http://localhost:3000
 
-### Setting up Clerk Authentication
+3. **Access the application**:
+   - Open http://localhost:3000
+   - Sign in with Google or GitHub (or skip if auth is disabled)
+   - Start creating prompts!
 
-1. Go to [clerk.com](https://clerk.com) and create an account
-2. Create a new application
-3. Copy the publishable key and secret key
-4. Add them to:
-   - `frontend/.env.local` as `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`
-   - `backend/.env` as `CLERK_SECRET_KEY`
-5. Configure OAuth providers (Google, GitHub) in Clerk dashboard if needed
+### Environment Variables
 
-### Database Setup
+**Backend (.env):**
+```env
+DATABASE_URL="postgresql://username:password@localhost:5432/prompttracker?schema=public"
+PORT=3001
+FRONTEND_URL=http://localhost:3000
+CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+```
 
-1. **Install PostgreSQL** if not already installed
-2. **Create a database**:
-   ```sql
-   CREATE DATABASE prompttracker;
-   ```
-3. **Update DATABASE_URL** in `backend/.env`:
-   ```
-   DATABASE_URL="postgresql://username:password@localhost:5432/prompttracker?schema=public"
-   ```
-4. **Run migrations**:
-   ```bash
-   cd backend
-   cmd /c "npx prisma migrate dev"
-   ```
+**Frontend (.env.local):**
+```env
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_API_URL=http://localhost:3001
+```
 
 ## 📊 Database Schema
 
-The application uses the following main entities:
+Main entities:
 
 - **User**: User accounts (synced with Clerk)
 - **Workspace**: Personal or team workspaces
-- **WorkspaceMember**: Team membership with roles
+- **WorkspaceMember**: Team membership with roles (OWNER, EDITOR, VIEWER)
 - **Collection**: Folders for organizing prompts
-- **Prompt**: The main prompt entity
-- **PromptVersion**: Version history for prompts
-- **PromptRun**: Usage logs with ratings
+- **Prompt**: The main prompt entity with title, description
+- **PromptVersion**: Version history for prompts with content
+- **PromptRun**: Usage logs with ratings and notes
 - **Tag**: Tags for categorization
 - **PromptTag**: Many-to-many relationship
 
@@ -183,38 +196,87 @@ See `backend/prisma/schema.prisma` for the complete schema.
 - `npm run build` - Build for production
 - `npm run start:prod` - Start production server
 - `npm run lint` - Run ESLint
-- `npm run test` - Run tests
 - `npx prisma studio` - Open Prisma Studio (database GUI)
+- `npx prisma migrate dev` - Create and apply migrations
 
 ### Adding shadcn/ui Components
 
 ```bash
 cd frontend
-cmd /c "npx shadcn@latest add button"
-cmd /c "npx shadcn@latest add dialog"
+npx shadcn@latest add button
+npx shadcn@latest add dialog
 # etc.
 ```
+
+## 🔧 Known Issues
+
+### Authentication (Temporary)
+- **Status**: Authentication guards are currently **commented out** for testing
+- **Mock User**: All requests use mock user ID `user_temp_test_123`
+- **Issue**: JWT payload validation not being called despite successful signature validation
+- **Workaround**: Auth guards disabled in all controllers
+- **Fix Needed**: Debug why Passport's `validate()` method isn't being invoked
+
+### Clock Skew
+- Clerk tokens may expire due to system clock differences
+- Workaround: Sign out and sign back in to get fresh tokens
 
 ## 📝 API Documentation
 
 Once the backend is running, visit http://localhost:3001/api/docs for interactive API documentation powered by Swagger.
 
+### Key Endpoints
+
+**Prompts:**
+- `POST /api/prompts` - Create a new prompt
+- `GET /api/prompts?workspaceId=...` - List prompts
+- `GET /api/prompts/:id` - Get prompt details
+- `PATCH /api/prompts/:id` - Update prompt
+- `POST /api/prompts/:id/versions` - Create new version
+
+**Workspaces:**
+- `GET /api/workspaces` - List user's workspaces
+- `POST /api/workspaces` - Create workspace
+
+**Users:**
+- `POST /api/users/sync` - Sync Clerk user to database
+- `GET /api/users/me` - Get current user
+
 ## 🗺️ Development Roadmap
 
-- [x] **Phase 0**: Design & Planning
-- [x] **Phase 1**: Project Setup (In Progress)
+- [x] **Phase 1**: Project Setup
   - [x] Initialize Next.js frontend
   - [x] Initialize NestJS backend
   - [x] Configure database schema
-  - [ ] Install dependencies
-  - [ ] Set up authentication
-- [ ] **Phase 2**: Core Backend
-- [ ] **Phase 3**: Core Frontend
+  - [x] Set up Clerk authentication (partial)
+  
+- [x] **Phase 2**: Core Prompt Management
+  - [x] Create prompts
+  - [x] View prompt details
+  - [x] Edit prompts
+  - [x] List prompts
+  - [x] Tagging system
+  
+- [ ] **Phase 3**: Advanced Features
+  - [ ] Delete prompts
+  - [ ] Version history view
+  - [ ] Collections management
+  - [ ] Search and filtering
+  
 - [ ] **Phase 4**: Team Features
+  - [ ] Workspace sharing
+  - [ ] Role-based access control
+  - [ ] Activity logs
+  
 - [ ] **Phase 5**: Analytics & Polish
+  - [ ] Usage analytics
+  - [ ] Performance tracking
+  - [ ] UI/UX improvements
+  
 - [ ] **Phase 6**: Testing & Deployment
-
-See [task.md](../.gemini/antigravity/brain/8c6d0259-c69b-4b7a-a25a-9e3591f545d0/task.md) for detailed task breakdown.
+  - [ ] Unit tests
+  - [ ] E2E tests
+  - [ ] Production deployment
 
 ## 🤝 Contributing
 
@@ -226,9 +288,28 @@ MIT
 
 ## 🔗 Links
 
-- [Implementation Plan](../.gemini/antigravity/brain/8c6d0259-c69b-4b7a-a25a-9e3591f545d0/implementation_plan.md)
-- [Task Breakdown](../.gemini/antigravity/brain/8c6d0259-c69b-4b7a-a25a-9e3591f545d0/task.md)
+- [GitHub Repository](https://github.com/rokorobot/PromptTracker)
 - [Clerk Documentation](https://clerk.com/docs)
 - [Next.js Documentation](https://nextjs.org/docs)
 - [NestJS Documentation](https://docs.nestjs.com)
 - [Prisma Documentation](https://www.prisma.io/docs)
+- [shadcn/ui Components](https://ui.shadcn.com)
+
+## 💡 Tips
+
+### First Time Setup
+1. Make sure PostgreSQL is running
+2. Create the database: `CREATE DATABASE prompttracker;`
+3. Run migrations: `npx prisma migrate dev`
+4. Start backend first, then frontend
+5. Visit http://localhost:3000 and start creating prompts!
+
+### Troubleshooting
+- **Connection refused**: Make sure both servers are running
+- **Database errors**: Check DATABASE_URL in backend/.env
+- **Auth issues**: Authentication is temporarily disabled, should work without Clerk keys
+- **Port conflicts**: Backend uses 3001, frontend uses 3000
+
+---
+
+**Built with ❤️ using Next.js, NestJS, and Prisma**
