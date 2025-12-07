@@ -115,6 +115,37 @@ export const workspacesApi = {
     },
 };
 
+// Collections API
+export const collectionsApi = {
+    list: async (fetchApi: any, workspaceId: string) => {
+        return fetchApi(`/collections?workspaceId=${workspaceId}`);
+    },
+
+    get: async (fetchApi: any, id: string) => {
+        return fetchApi(`/collections/${id}`);
+    },
+
+    create: async (fetchApi: any, workspaceId: string, data: { name: string; description?: string }) => {
+        return fetchApi("/collections", {
+            method: "POST",
+            body: JSON.stringify({ ...data, workspaceId }),
+        });
+    },
+
+    update: async (fetchApi: any, id: string, data: { name?: string; description?: string }) => {
+        return fetchApi(`/collections/${id}`, {
+            method: "PATCH",
+            body: JSON.stringify(data),
+        });
+    },
+
+    delete: async (fetchApi: any, id: string) => {
+        return fetchApi(`/collections/${id}`, {
+            method: "DELETE",
+        });
+    },
+};
+
 // Users API
 export const usersApi = {
     sync: async (fetchApi: any, data: { name?: string; imageUrl?: string }) => {

@@ -7,9 +7,16 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useCreatePrompt, useWorkspaces } from "@/lib/hooks";
+import { useCreatePrompt, useWorkspaces, useCollections } from "@/lib/hooks";
 import { useToast } from "@/hooks/use-toast";
 
 export default function NewPromptPage() {
@@ -17,15 +24,16 @@ export default function NewPromptPage() {
     const { toast } = useToast();
     const createPrompt = useCreatePrompt();
     const { data: workspaces } = useWorkspaces();
+    const workspaceId = workspaces?.[0]?.id;
+    const { data: collections } = useCollections(workspaceId || "");
 
     const [formData, setFormData] = useState({
         title: "",
         description: "",
         content: "",
         tags: "",
+        collectionId: "none",
     });
-
-    const workspaceId = workspaces?.[0]?.id;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -46,6 +54,7 @@ export default function NewPromptPage() {
                 description: formData.description || undefined,
                 content: formData.content,
                 tags: formData.tags ? formData.tags.split(",").map(t => t.trim()).filter(Boolean) : undefined,
+                collectionId: formData.collectionId === "none" ? undefined : formData.collectionId,
             });
 
             toast({
@@ -92,6 +101,26 @@ export default function NewPromptPage() {
                                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                 required
                             />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="collection">Collection</Label>
+                            <Select
+                                value={formData.collectionId}
+                                onValueChange={(value) => setFormData({ ...formData, collectionId: value })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a collection" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">None</SelectItem>
+                                    {collections?.map((collection: any) => (
+                                        <SelectItem key={collection.id} value={collection.id}>
+                                            {collection.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="space-y-2">

@@ -1,15 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { usePrompt } from "@/lib/hooks";
+import { usePrompt, useWorkspaces, useCollections } from "@/lib/hooks";
 import { useToast } from "@/hooks/use-toast";
 import { useApiClient } from "@/lib/services/api";
 
@@ -21,22 +28,30 @@ export default function EditPromptPage() {
     const { data: prompt, isLoading } = usePrompt(id);
     const { fetchApi } = useApiClient();
 
+    const { data: workspaces } = useWorkspaces();
+    const workspaceId = workspaces?.[0]?.id;
+    const { data: collections } = useCollections(workspaceId || "");
+
     const [formData, setFormData] = useState({
-        title: prompt?.title || "",
-        description: prompt?.description || "",
-        tags: prompt?.tags.map((t: any) => t.tag.name).join(", ") || "",
+        title: "",
+        description: "",
+        tags: "",
+        collectionId: "none",
     });
 
     const [isSaving, setIsSaving] = useState(false);
 
     // Update form when prompt loads
-    if (prompt && !formData.title) {
-        setFormData({
-            title: prompt.title,
-            description: prompt.description || "",
-            tags: prompt.tags.map((t: any) => t.tag.name).join(", "),
-        });
-    }
+    useEffect(() => {
+        if (prompt) {
+            setFormData({
+                title: prompt.title,
+                description: prompt.description || "",
+                tags: prompt.tags.map((t: any) => t.tag.name).join(", "),
+                collectionId: prompt.collectionId || "none",
+            });
+        }
+    }, [prompt]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -49,6 +64,7 @@ export default function EditPromptPage() {
                     title: formData.title,
                     description: formData.description || undefined,
                     tags: formData.tags ? formData.tags.split(",").map(t => t.trim()).filter(Boolean) : [],
+                    collectionId: formData.collectionId === "none" ? null : formData.collectionId,
                 }),
             });
 
@@ -117,6 +133,26 @@ export default function EditPromptPage() {
                                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                 required
                             />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="collection">Collection</Label>
+                            <Select
+                                value={formData.collectionId}
+                                onValueChange={(value) => setFormData({ ...formData, collectionId: value })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a collection" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">None</SelectItem>
+                                    {collections?.map((collection: any) => (
+                                        <SelectItem key={collection.id} value={collection.id}>
+                                            {collection.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="space-y-2">

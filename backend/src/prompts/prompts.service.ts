@@ -138,7 +138,7 @@ export class PromptsService {
         return prompt;
     }
 
-    async update(userId: string, id: string, data: { title?: string; description?: string; tags?: string[] }) {
+    async update(userId: string, id: string, data: { title?: string; description?: string; tags?: string[]; collectionId?: string | null }) {
         const user = await this.prisma.user.findUnique({ where: { clerkId: userId } });
         if (!user) throw new NotFoundException('User not found');
 
@@ -154,6 +154,7 @@ export class PromptsService {
                 data: {
                     title: data.title,
                     description: data.description,
+                    collectionId: data.collectionId,
                 },
             });
 

@@ -45,7 +45,7 @@ export class PromptsController {
 
     @Patch(':id')
     @ApiOperation({ summary: 'Update prompt' })
-    update(@Request() req, @Param('id') id: string, @Body() body: { title?: string; description?: string; tags?: string[] }) {
+    update(@Request() req, @Param('id') id: string, @Body() body: { title?: string; description?: string; tags?: string[]; collectionId?: string | null }) {
         return this.promptsService.update(this.getMockUserId(), id, body);
     }
 
