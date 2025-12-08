@@ -4,30 +4,44 @@ A comprehensive web application for saving, organizing, versioning, and analyzin
 
 ## 🎯 Current Status
 
-**MVP Core Features - Working!** ✅
+**MVP Core Features - Complete!** ✅
 
-The application is functional with core prompt management features. Authentication is temporarily disabled to allow testing of the main functionality.
+The application is fully functional with authentication, prompt management, collections, and search capabilities.
 
 ### ✅ Implemented Features
-- **Create Prompts**: Full form with title, description, content, and tags
-- **View Prompts**: Detail page with version history and copy-to-clipboard functionality
-- **Edit Prompts**: Update title, description, and tags
-- **List Prompts**: Dashboard view showing all prompts in workspace
-- **User/Workspace Sync**: Automatic workspace creation on first login
-- **Tagging System**: Add and manage tags for prompt organization
 
-### 🚧 In Progress
-- **Authentication**: Clerk integration (JWT validation needs debugging)
-- **Delete Prompts**: Backend endpoint ready, UI pending
-- **Version History**: View and compare prompt versions
-- **Collections**: Organize prompts into folders/projects
+**Authentication & User Management**
+- Clerk authentication with Google OAuth
+- Automatic user sync and workspace creation
+- Secure JWT-based API authentication
+
+**Prompt Management**
+- Create prompts with title, description, content, and tags
+- View prompt details with version history
+- Edit and update prompts
+- Delete prompts with confirmation
+- Version history with copy-to-clipboard
+- Enhanced search across title, description, content, and tags
+
+**Collections**
+- Create and manage collections
+- Organize prompts into collections
+- View prompts by collection
+- Edit and delete collections
+
+**User Interface**
+- Modern, responsive dashboard with dark mode
+- Settings page with profile and appearance controls
+- Real-time search and filtering
+- Toast notifications for user feedback
 
 ### 📋 Planned Features
-- **Analytics Dashboard**: Track prompt performance and usage
-- **Team Collaboration**: Share prompts with role-based access
-- **Search & Filters**: Full-text search with advanced filtering
+- **Analytics Dashboard**: Track prompt performance and usage statistics
+- **Team Collaboration**: Share workspaces with role-based access control
+- **Advanced Filters**: Filter by collection, tags, date ranges
 - **Browser Extension**: Quick-save from ChatGPT/Claude
 - **API Integration**: Direct LLM API calls with auto-logging
+- **Export**: Export prompts to JSON, CSV, or Markdown
 
 ## 🏗️ Tech Stack
 
@@ -36,8 +50,9 @@ The application is functional with core prompt management features. Authenticati
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS + shadcn/ui components
 - **State Management**: TanStack Query (React Query)
-- **Authentication**: Clerk (temporarily disabled)
+- **Authentication**: Clerk
 - **Forms**: React Hook Form + Zod validation
+- **Icons**: Lucide React
 
 ### Backend
 - **Framework**: NestJS
@@ -45,7 +60,7 @@ The application is functional with core prompt management features. Authenticati
 - **Database**: PostgreSQL
 - **ORM**: Prisma
 - **API Documentation**: Swagger/OpenAPI
-- **Authentication**: Clerk + JWT (temporarily disabled)
+- **Authentication**: Clerk JWT + Passport
 
 ## 📁 Project Structure
 
@@ -55,32 +70,28 @@ prompt-tracker/
 │   ├── app/
 │   │   ├── (auth)/          # Authentication pages
 │   │   ├── dashboard/       # Main application pages
-│   │   │   ├── page.tsx     # Dashboard home
-│   │   │   └── prompts/     # Prompt management
-│   │   │       ├── page.tsx           # Prompts list
-│   │   │       ├── new/page.tsx       # Create prompt
-│   │   │       └── [id]/              # Prompt detail & edit
-│   │   └── layout.tsx       # Root layout with Clerk
+│   │   │   ├── page.tsx           # Dashboard home
+│   │   │   ├── prompts/           # Prompt management
+│   │   │   ├── collections/       # Collections management
+│   │   │   └── settings/          # User settings
+│   │   └── layout.tsx       # Root layout with providers
 │   ├── components/
 │   │   ├── ui/             # shadcn/ui components
 │   │   ├── auth/           # Auth components (UserSync)
 │   │   ├── layout/         # Header, Sidebar
-│   │   └── prompts/        # PromptCard, PromptList
-│   ├── lib/
-│   │   ├── services/       # API client
-│   │   ├── hooks.ts        # React Query hooks
-│   │   └── query-provider.tsx
-│   └── middleware.ts       # Clerk middleware
+│   │   └── prompts/        # Prompt components
+│   └── lib/
+│       ├── services/       # API client
+│       └── hooks.ts        # React Query hooks
 │
 ├── backend/                 # NestJS backend application
 │   ├── src/
 │   │   ├── auth/           # JWT strategy (JWKS integration)
-│   │   ├── users/          # User management
+│   │   ├── users/          # User management & sync
 │   │   ├── workspaces/     # Workspace management
 │   │   ├── prompts/        # Prompt CRUD operations
-│   │   ├── collections/    # Collections (planned)
-│   │   ├── prisma/         # Prisma service
-│   │   └── main.ts         # Entry point with CORS
+│   │   ├── collections/    # Collections management
+│   │   └── prisma/         # Prisma service
 │   └── prisma/
 │       └── schema.prisma   # Database schema
 │
@@ -93,7 +104,7 @@ prompt-tracker/
 
 - Node.js 18+ and npm
 - PostgreSQL 14+
-- Clerk account (for authentication - optional for testing)
+- Clerk account (free tier available)
 
 ### Quick Start
 
@@ -110,7 +121,7 @@ prompt-tracker/
    
    # Copy environment file and configure
    cp .env.example .env
-   # Edit .env with your database credentials
+   # Edit .env with your database credentials and Clerk keys
    
    # Generate Prisma client and run migrations
    npx prisma generate
@@ -124,7 +135,7 @@ prompt-tracker/
    
    # Copy environment file
    cp .env.local.example .env.local
-   # Edit .env.local with your Clerk keys (optional for testing)
+   # Edit .env.local with your Clerk keys
    ```
 
 ### Running the Application
@@ -144,7 +155,8 @@ prompt-tracker/
 
 3. **Access the application**:
    - Open http://localhost:3000
-   - Sign in with Google or GitHub (or skip if auth is disabled)
+   - Sign in with Google
+   - Your personal workspace will be created automatically
    - Start creating prompts!
 
 ### Environment Variables
@@ -208,39 +220,34 @@ npx shadcn@latest add dialog
 # etc.
 ```
 
-## 🔧 Known Issues
-
-### Authentication (Temporary)
-- **Status**: Authentication guards are currently **commented out** for testing
-- **Mock User**: All requests use mock user ID `user_temp_test_123`
-- **Issue**: JWT payload validation not being called despite successful signature validation
-- **Workaround**: Auth guards disabled in all controllers
-- **Fix Needed**: Debug why Passport's `validate()` method isn't being invoked
-
-### Clock Skew
-- Clerk tokens may expire due to system clock differences
-- Workaround: Sign out and sign back in to get fresh tokens
-
 ## 📝 API Documentation
 
 Once the backend is running, visit http://localhost:3001/api/docs for interactive API documentation powered by Swagger.
 
 ### Key Endpoints
 
+**Authentication:**
+- `POST /api/users/sync` - Sync Clerk user to database
+- `GET /api/users/me` - Get current user
+
 **Prompts:**
 - `POST /api/prompts` - Create a new prompt
-- `GET /api/prompts?workspaceId=...` - List prompts
+- `GET /api/prompts?workspaceId=...&search=...` - List and search prompts
 - `GET /api/prompts/:id` - Get prompt details
 - `PATCH /api/prompts/:id` - Update prompt
+- `DELETE /api/prompts/:id` - Delete prompt
 - `POST /api/prompts/:id/versions` - Create new version
+
+**Collections:**
+- `GET /api/collections?workspaceId=...` - List collections
+- `POST /api/collections` - Create collection
+- `GET /api/collections/:id` - Get collection details
+- `PATCH /api/collections/:id` - Update collection
+- `DELETE /api/collections/:id` - Delete collection
 
 **Workspaces:**
 - `GET /api/workspaces` - List user's workspaces
 - `POST /api/workspaces` - Create workspace
-
-**Users:**
-- `POST /api/users/sync` - Sync Clerk user to database
-- `GET /api/users/me` - Get current user
 
 ## 🗺️ Development Roadmap
 
@@ -248,30 +255,31 @@ Once the backend is running, visit http://localhost:3001/api/docs for interactiv
   - [x] Initialize Next.js frontend
   - [x] Initialize NestJS backend
   - [x] Configure database schema
-  - [x] Set up Clerk authentication (partial)
+  - [x] Set up Clerk authentication
   
 - [x] **Phase 2**: Core Prompt Management
   - [x] Create prompts
   - [x] View prompt details
   - [x] Edit prompts
+  - [x] Delete prompts
   - [x] List prompts
   - [x] Tagging system
+  - [x] Version history
   
-- [ ] **Phase 3**: Advanced Features
-  - [ ] Delete prompts
-  - [ ] Version history view
-  - [ ] Collections management
-  - [ ] Search and filtering
+- [x] **Phase 3**: Collections & Search
+  - [x] Collections management
+  - [x] Enhanced search (title, description, content, tags)
+  - [x] Settings page
   
-- [ ] **Phase 4**: Team Features
+- [ ] **Phase 4**: Analytics
+  - [ ] Usage statistics
+  - [ ] Performance tracking
+  - [ ] Charts and visualizations
+  
+- [ ] **Phase 5**: Team Features
   - [ ] Workspace sharing
   - [ ] Role-based access control
   - [ ] Activity logs
-  
-- [ ] **Phase 5**: Analytics & Polish
-  - [ ] Usage analytics
-  - [ ] Performance tracking
-  - [ ] UI/UX improvements
   
 - [ ] **Phase 6**: Testing & Deployment
   - [ ] Unit tests
@@ -300,15 +308,17 @@ MIT
 ### First Time Setup
 1. Make sure PostgreSQL is running
 2. Create the database: `CREATE DATABASE prompttracker;`
-3. Run migrations: `npx prisma migrate dev`
-4. Start backend first, then frontend
-5. Visit http://localhost:3000 and start creating prompts!
+3. Configure your Clerk application for Google OAuth
+4. Run migrations: `npx prisma migrate dev`
+5. Start backend first, then frontend
+6. Visit http://localhost:3000 and sign in with Google!
 
 ### Troubleshooting
 - **Connection refused**: Make sure both servers are running
 - **Database errors**: Check DATABASE_URL in backend/.env
-- **Auth issues**: Authentication is temporarily disabled, should work without Clerk keys
+- **Auth errors**: Verify Clerk keys are correctly set in both .env files
 - **Port conflicts**: Backend uses 3001, frontend uses 3000
+- **Blank page after code changes**: Restart dev servers to clear cache
 
 ---
 
