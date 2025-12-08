@@ -14,7 +14,7 @@ export default function DashboardPage() {
 
     // Calculate stats
     const totalPrompts = prompts?.length || 0;
-    const totalRuns = prompts?.reduce((acc, prompt) => {
+    const totalRuns = prompts?.reduce((acc: number, prompt: any) => {
         return acc + (prompt.versions?.[0]?._count?.runs || 0);
     }, 0) || 0;
 
@@ -70,7 +70,7 @@ export default function DashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                            {prompts?.reduce((acc, p) => acc + p.versions.length, 0) || 0}
+                            {prompts?.reduce((acc: number, p: any) => acc + p.versions.length, 0) || 0}
                         </div>
                         <p className="text-xs text-muted-foreground">
                             All prompt versions
@@ -114,7 +114,7 @@ export default function DashboardPage() {
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {recentPrompts.map((prompt) => (
+                                {recentPrompts.map((prompt: any) => (
                                     <Link
                                         key={prompt.id}
                                         href={`/dashboard/prompts/${prompt.id}`}
@@ -157,7 +157,7 @@ export default function DashboardPage() {
                     <CardContent>
                         {prompts && prompts.length > 0 ? (
                             <div className="space-y-4">
-                                {prompts.slice(0, 5).map((prompt) => (
+                                {prompts.slice(0, 5).map((prompt: any) => (
                                     <div key={prompt.id} className="flex items-start gap-3">
                                         <div className="w-2 h-2 rounded-full bg-primary mt-2" />
                                         <div className="flex-1 min-w-0">
