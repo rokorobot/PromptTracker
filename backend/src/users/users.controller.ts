@@ -9,28 +9,27 @@ export class UsersController {
     constructor(private readonly usersService: UsersService) { }
 
     @Post('sync')
-    // @UseGuards(JwtAuthGuard) // Temporarily disabled for testing
+    @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Sync Clerk user to database' })
     async syncUser(@Request() req, @Body() body: { name?: string; imageUrl?: string }) {
-        // TEMPORARY: Mock user for testing
-        const userId = 'user_temp_test_123';
-        const email = 'test@example.com';
+        const { userId, email } = req.user;
+        // Fallback email if missing from token (Clerk sometimes omits it in dev)
+        const userEmail = email || `${userId}@placeholder.com`;
+
         return this.usersService.syncUser({
             clerkId: userId,
-            email,
-            name: body.name || 'Test User',
+            email: userEmail,
+            name: body.name,
             imageUrl: body.imageUrl,
         });
     }
 
     @Get('me')
-    // @UseGuards(JwtAuthGuard) // Temporarily disabled for testing
+    @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get current user profile' })
     async getMe(@Request() req) {
-        // TEMPORARY: Mock user for testing
-        const userId = 'user_temp_test_123';
-        return this.usersService.findByClerkId(userId);
+        return this.usersService.findByClerkId(req.user.userId);
     }
 }

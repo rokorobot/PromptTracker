@@ -4,6 +4,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { QueryProvider } from "@/lib/query-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { UserSync } from "@/components/auth/UserSync";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,7 +31,10 @@ export default function RootLayout({
                         enableSystem
                         disableTransitionOnChange
                     >
-                        <QueryProvider>{children}</QueryProvider>
+                        <QueryProvider>
+                            <UserSync />
+                            {children}
+                        </QueryProvider>
                     </ThemeProvider>
                 </body>
             </html>

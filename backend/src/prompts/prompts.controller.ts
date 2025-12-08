@@ -5,20 +5,22 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('Prompts')
 @Controller('prompts')
-// @UseGuards(JwtAuthGuard) // Temporarily disabled for testing
+@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class PromptsController {
     constructor(private readonly promptsService: PromptsService) { }
 
-    // TEMPORARY: Mock user ID for all requests
-    private getMockUserId() {
-        return 'user_temp_test_123';
-    }
-
     @Post()
     @ApiOperation({ summary: 'Create a new prompt' })
     create(@Request() req, @Body() body: { workspaceId: string; collectionId?: string; title: string; description?: string; content: string; tags?: string[] }) {
-        return this.promptsService.create(this.getMockUserId(), body);
+        return this.promptsService.create(req.user.userId, {
+            workspaceId: body.workspaceId,
+            title: body.title,
+            description: body.description,
+            tags: body.tags,
+            collectionId: body.collectionId,
+            content: body.content,
+        });
     }
 
     @Get()
@@ -34,36 +36,36 @@ export class PromptsController {
         @Query('search') search?: string,
         @Query('tags') tags?: string[],
     ) {
-        return this.promptsService.findAll(this.getMockUserId(), workspaceId, { collectionId, search, tags });
+        return this.promptsService.findAll(req.user.userId, workspaceId, { collectionId, search, tags });
     }
 
     @Get(':id')
     @ApiOperation({ summary: 'Get prompt details' })
     findOne(@Request() req, @Param('id') id: string) {
-        return this.promptsService.findOne(this.getMockUserId(), id);
+        return this.promptsService.findOne(req.user.userId, id);
     }
 
     @Patch(':id')
     @ApiOperation({ summary: 'Update prompt' })
     update(@Request() req, @Param('id') id: string, @Body() body: { title?: string; description?: string; tags?: string[]; collectionId?: string | null }) {
-        return this.promptsService.update(this.getMockUserId(), id, body);
+        return this.promptsService.update(req.user.userId, id, body);
     }
 
     @Delete(':id')
     @ApiOperation({ summary: 'Delete prompt' })
-    delete(@Request() req, @Param('id') id: string) {
-        return this.promptsService.delete(this.getMockUserId(), id);
+    remove(@Request() req, @Param('id') id: string) {
+        return this.promptsService.delete(req.user.userId, id);
     }
 
     @Post(':id/versions')
     @ApiOperation({ summary: 'Create a new version' })
     createVersion(@Request() req, @Param('id') id: string, @Body() body: { content: string; model?: string }) {
-        return this.promptsService.createVersion(this.getMockUserId(), id, body);
+        return this.promptsService.createVersion(req.user.userId, id, body);
     }
 
     @Post('versions/:id/run')
     @ApiOperation({ summary: 'Log a run for a version' })
     logRun(@Request() req, @Param('id') id: string, @Body() body: { rating?: number; notes?: string; usedModel?: string; responseLength?: number }) {
-        return this.promptsService.logRun(this.getMockUserId(), id, body);
+        return this.promptsService.logRun(req.user.userId, id, body);
     }
 }

@@ -5,7 +5,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('Collections')
 @Controller('collections')
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class CollectionsController {
     constructor(private readonly collectionsService: CollectionsService) { }
@@ -17,8 +17,7 @@ export class CollectionsController {
     @Post()
     @ApiOperation({ summary: 'Create a new collection' })
     create(@Request() req, @Body() body: { workspaceId: string; name: string; description?: string }) {
-        // return this.collectionsService.create(req.user.userId, body.workspaceId, {
-        return this.collectionsService.create(this.getMockUserId(), body.workspaceId, {
+        return this.collectionsService.create(req.user.userId, body.workspaceId, {
             name: body.name,
             description: body.description,
         });
@@ -28,28 +27,24 @@ export class CollectionsController {
     @ApiOperation({ summary: 'List collections in a workspace' })
     @ApiQuery({ name: 'workspaceId', required: true })
     findAll(@Request() req, @Query('workspaceId') workspaceId: string) {
-        // return this.collectionsService.findAll(req.user.userId, workspaceId);
-        return this.collectionsService.findAll(this.getMockUserId(), workspaceId);
+        return this.collectionsService.findAll(req.user.userId, workspaceId);
     }
 
     @Get(':id')
     @ApiOperation({ summary: 'Get collection details' })
     findOne(@Request() req, @Param('id') id: string) {
-        // return this.collectionsService.findOne(req.user.userId, id);
-        return this.collectionsService.findOne(this.getMockUserId(), id);
+        return this.collectionsService.findOne(req.user.userId, id);
     }
 
     @Patch(':id')
     @ApiOperation({ summary: 'Update collection' })
     update(@Request() req, @Param('id') id: string, @Body() body: { name?: string; description?: string }) {
-        // return this.collectionsService.update(req.user.userId, id, body);
-        return this.collectionsService.update(this.getMockUserId(), id, body);
+        return this.collectionsService.update(req.user.userId, id, body);
     }
 
     @Delete(':id')
     @ApiOperation({ summary: 'Delete collection' })
     remove(@Request() req, @Param('id') id: string) {
-        // return this.collectionsService.remove(req.user.userId, id);
-        return this.collectionsService.remove(this.getMockUserId(), id);
+        return this.collectionsService.remove(req.user.userId, id);
     }
 }

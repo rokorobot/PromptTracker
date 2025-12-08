@@ -75,6 +75,22 @@ export class PromptsService {
             where.OR = [
                 { title: { contains: filters.search, mode: 'insensitive' } },
                 { description: { contains: filters.search, mode: 'insensitive' } },
+                {
+                    versions: {
+                        some: {
+                            content: { contains: filters.search, mode: 'insensitive' }
+                        }
+                    }
+                },
+                {
+                    tags: {
+                        some: {
+                            tag: {
+                                name: { contains: filters.search, mode: 'insensitive' }
+                            }
+                        }
+                    }
+                }
             ];
         }
 

@@ -24,14 +24,36 @@ export class UsersService {
         // Check if user exists
         const existingUser = await this.prisma.user.findUnique({
             where: { clerkId },
+            include: { ownedWorkspaces: true },
         });
 
         if (existingUser) {
             // Update existing user
-            return this.prisma.user.update({
+            await this.prisma.user.update({
                 where: { id: existingUser.id },
                 data: { email, name, imageUrl },
             });
+
+            // Ensure user has at least one workspace
+            if (existingUser.ownedWorkspaces.length === 0) {
+                const workspace = await this.prisma.workspace.create({
+                    data: {
+                        name: `${name || 'User'}'s Workspace`,
+                        type: WorkspaceType.PERSONAL,
+                        ownerId: existingUser.id,
+                    },
+                });
+
+                await this.prisma.workspaceMember.create({
+                    data: {
+                        workspaceId: workspace.id,
+                        userId: existingUser.id,
+                        role: MemberRole.OWNER,
+                    },
+                });
+            }
+
+            return existingUser;
         }
 
         // Create new user and personal workspace
